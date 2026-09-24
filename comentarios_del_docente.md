@@ -165,3 +165,14 @@ No se pide y **no suma**:
 3. Cargá unos 10 registros por tabla: con 4 o 5 equipos y varios partidos ya se arma una tabla de posiciones interesante.
 
 **Lo importante de tu tema:** la tabla de posiciones **no se guarda**, se calcula recorriendo los partidos y contando 3 puntos por ganado y 1 por empatado. Ese es el endpoint que más se va a mirar en la defensa.
+
+## 24/09
+
+**Lo que hay:** sin cambios. El repo sigue con un README de una línea.
+
+Todos los demás grupos ya tienen código o base de datos. Estás quedando atrás y el calendario no espera: el 30/09 la meta son los endpoints 1 a 3.
+
+**Próximos pasos (urgente)**
+1. `main.py` con `app = FastAPI()` y un endpoint que devuelva JSON. Probalo con `uvicorn main:app --reload` y `/docs`.
+2. `seed.py` con **SQLAlchemy** (ver [guias/sqlalchemy_orm.md](guias/sqlalchemy_orm.md)): `equipos`, `jugadores` (con `equipo_id`) y `partidos` (con `local_id` y `visitante_id`), ~10 registros por tabla.
+3. `requirements.txt` con `fastapi`, `uvicorn`, `uvicorn-worker`, `gunicorn`, `sqlalchemy`.
