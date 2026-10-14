@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.exc import OperationalError
 from fastapi.security import APIKeyHeader
 import crud
 
-CLAVE = "clave-de-prueba-2026"   # clave del grupo
+CLAVE = "clave-de-prueba-2026"
 header = APIKeyHeader(name="X-API-Key")
 
 def verificar(clave: str = Depends(header)):
