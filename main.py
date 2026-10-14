@@ -1,8 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy.exc import OperationalError
+from fastapi.security import APIKeyHeader
 import crud
 
-app = FastAPI()
+CLAVE = "clave-de-prueba-2026"   # clave del grupo
+header = APIKeyHeader(name="X-API-Key")
+
+def verificar(clave: str = Depends(header)):
+    if clave != CLAVE:
+        raise HTTPException(status_code=401, detail="API key invalida")
+
+app = FastAPI(dependencies=[Depends(verificar)])
 
 @app.get("/games")
 def list_games(team_id: int | None = None):
