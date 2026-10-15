@@ -18,78 +18,88 @@ Esto es lo que hay que entregar. Lo que no está acá, no se pide.
 
 ### Stack
 - Python + **FastAPI** + Uvicorn.
-- Datos en **SQLite** usando **SQLAlchemy** (ORM): las tablas se definen como clases de Python y las consultas se hacen con métodos, sin escribir SQL a mano. **No se usa Pydantic**: las validaciones se hacen a mano en Python. Guía con ejemplo completo: [guias/sqlalchemy_orm.md](guias/sqlalchemy_orm.md).
+- Datos en **SQLite**. Pueden usar **SQLAlchemy** (ORM, con la guía [guias/sqlalchemy_orm.md](guias/sqlalchemy_orm.md)) o **`sqlite3` con SQL directo**: las dos formas valen. **Pydantic es opcional**: el cuerpo del `POST` se puede validar con un modelo de Pydantic (`class StudentIn(BaseModel)`) o a mano en `validation.py`. Las dos formas valen.
 - Repositorio en GitHub con commits de **todos** los integrantes.
-- API desplegada **en producción con Gunicorn** en Render, con URL pública y `/docs` funcionando (ver abajo).
+- **Demo local:** la API se corre en la notebook de cada grupo con `uvicorn`. No hace falta desplegarla en la web (ver *Demo local*, abajo).
 
 ### Nombres en el código (criterio acordado con la cátedra de Inglés)
 
-> **Actualizado el 08/10:** ahora va **todo en inglés**, también tablas, columnas y rutas. Reemplaza el criterio del 24/09.
+> **Actualizado el 15/10:** los nombres de tablas, columnas y rutas en inglés pasan a ser una **recomendación**. Si quedan en español, no es un error.
 
 - **Variables, funciones y clases en inglés**: `list_students`, `get_session`, `class Student(Base)`.
-- **Tablas, columnas, rutas y query params también en inglés**. Ejemplo: `class Student(Base)` con `__tablename__ = "students"`, columna `career_id` y ruta `GET /students`.
-- El alcance de cada grupo lista las tablas y los endpoints en español **solo como referencia**: tradúzcanlos al inglés y usen **el mismo nombre en todos los archivos** (`db.py`, `seed.py`, `main.py`, `validation.py`).
+- **Tablas, columnas, rutas y query params:** se recomienda que también vayan en inglés (`__tablename__ = "students"`, columna `career_id`, ruta `GET /students`), pero pueden quedar en español, como figuran en el alcance.
+- Lo que sí es obligatorio: usar **el mismo nombre en todos los archivos** (`models.py`, `seed.py`, `crud.py`, `main.py`, `validation.py`). Si la tabla se llama `estudiantes` en el seed, se llama `estudiantes` en todos lados.
 - **Documentación en inglés**: `README.md`, docstrings y los mensajes que devuelve la API.
 - **Comentarios**: pueden estar en español mientras desarrollan, pero para la **entrega final** tienen que estar en inglés.
 
-### Despliegue a producción (Render + Gunicorn)
+### Demo local (sin despliegue)
 
-En tu compu desarrollás con `uvicorn main:app --reload`. En producción corre **Gunicorn** como administrador de procesos, con workers de Uvicorn adentro.
-
-> Gunicorn **no funciona en Windows**. Localmente seguí usando `uvicorn`; Gunicorn corre en el servidor (Linux).
+> **Actualizado el 15/10:** no se despliega a producción. La defensa es **local**, en la notebook del grupo.
 
 `requirements.txt` debe incluir:
 ```
 fastapi
 uvicorn
-uvicorn-worker
-gunicorn
-sqlalchemy
+python-dotenv
 ```
+y `sqlalchemy` si lo usan.
 
-En Render → **New → Web Service** → conectás el repo, y configurás:
+Para levantar el proyecto desde cero (lo mismo tiene que estar en el README):
+```
+python -m venv venv
+venv\Scripts\activate          (en Linux/Mac: source venv/bin/activate)
+pip install -r requirements.txt
+python seed.py
+uvicorn main:app --reload
+```
+Y abrir http://127.0.0.1:8000/docs.
 
-| Campo | Valor |
-|---|---|
-| Build Command | `pip install -r requirements.txt` |
-| Start Command | `python seed.py && gunicorn main:app -k uvicorn_worker.UvicornWorker -w 2 -b 0.0.0.0:$PORT` |
-
-La clave viaja en el código, así que no hay que configurar nada más en Render.
-
-- El seed corre **una sola vez antes** de levantar Gunicorn. Si lo pusieras adentro de `main.py`, cada worker lo ejecutaría por su cuenta y podrían cargar los datos duplicados.
-- El plan gratis se duerme tras ~15 min sin uso (la primera visita tarda ~1 min) y su disco se borra al reiniciar: por eso el seed.
+- El seed se corre **una vez, antes** de levantar el servidor. No va adentro de `main.py`.
+- Antes de la defensa, prueben todo esto en la notebook con la que van a presentar.
 
 ### Base de datos
 - **3 tablas**, cada una con clave primaria (`id`).
 - Al menos **1 relación** entre tablas (clave foránea, ej. `equipo_id`).
-- Unos **10 registros de ejemplo** por tabla. Siempre **datos ficticios**.
-- Un script de carga inicial `seed.py` que crea las tablas (`create_all`) y carga los datos **si la base está vacía** (ver sección 9 de la guía). Se ejecuta antes de levantar el servidor. En Render el disco se borra al reiniciar: así la API siempre arranca con datos.
-- El archivo `.db` **no se sube** a GitHub (agregalo al `.gitignore`); se genera solo.
+- **Algunos datos de ejemplo** en cada tabla, los suficientes para ver funcionar los endpoints. No hay mínimo ni máximo. Siempre **datos ficticios**.
+- Recomendación: que los datos permitan ver los filtros en acción, por ejemplo productos de varias categorías, para que `?category=` devuelva algo distinto de la lista completa.
+- Un script de carga inicial `seed.py` que crea las tablas (con `create_all` o con `CREATE TABLE IF NOT EXISTS`) y carga los datos **solo si la base está vacía**. Se ejecuta antes de levantar el servidor y, si se corre dos veces, no duplica nada.
+- El archivo `.db` **puede estar en el repo**. Si lo suben, que esté actualizado (el que genera el seed actual).
 
 ### Seguridad: TODOS los endpoints van protegidos
-- Todos los endpoints piden la API key en el encabezado `X-API-Key`.
-- La clave se define como una constante al principio de `main.py`. Más adelante en la carrera van a ver cómo sacarla del código con variables de entorno; por ahora, así.
-- Como la clave está a la vista en el repo, **los datos son todos ficticios** y no se usa esta API para nada real.
-- Sin clave o con clave incorrecta → **401**.
 
-Se protege toda la app de una vez:
+> **Actualizado el 15/10:** se **recomienda** guardar la clave en una variable de entorno en lugar de escribirla en el código. No es obligatorio; en la defensa se puede preguntar por qué conviene hacerlo.
+
+- Todos los endpoints piden la API key en el encabezado `X-API-Key`.
+- Sin clave o con clave incorrecta → **401**. Con la clave correcta → **200** y los datos.
+- **Recomendado:** guardar la clave en un archivo **`.env`** que **no se sube** (va en el `.gitignore`) y leerla con `python-dotenv`. Al repo se sube un **`.env.example`** con el nombre de la variable y sin el valor. Paso a paso en [guias/variables_de_entorno.md](guias/variables_de_entorno.md). Si la dejan como constante en `security.py`, también vale.
+- Los datos son todos **ficticios**: esta API no se usa para nada real.
+
+`security.py` con la clave en el `.env` (la forma recomendada):
 
 ```python
-from fastapi import FastAPI, Depends, HTTPException
+import os
+
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader
 
-CLAVE = "clave-de-prueba-2026"   # clave del grupo
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
 header = APIKeyHeader(name="X-API-Key")
 
-def verificar(clave: str = Depends(header)):
-    if clave != CLAVE:
-        raise HTTPException(status_code=401, detail="API key invalida")
 
-app = FastAPI(dependencies=[Depends(verificar)])
+def verify_api_key(key: str = Depends(header)):
+    if API_KEY is None or key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+```
+
+Y en `main.py` se protege toda la app de una vez:
+
+```python
+app = FastAPI(dependencies=[Depends(verify_api_key)])
 ```
 
 En `/docs` usá el botón **Authorize** para cargar la clave y probar.
-
 ---
 
 ## Nivel A — obligatorio (igual para todos)
@@ -98,17 +108,17 @@ Cada grupo implementa **exactamente estos 6 endpoints**, adaptados a su tema (ve
 
 | # | Tipo | Ejemplo genérico | Qué practica |
 |---|---|---|---|
-| 1 | Listado con filtro | `GET /cosas?campo=valor` | Query param, `select(...).where(...)` |
+| 1 | Listado con filtro | `GET /cosas?campo=valor` | Query param y filtro en la consulta |
 | 2 | Detalle | `GET /cosas/{id}` | Path param, **404** si no existe |
-| 3 | Relación | `GET /cosas/{id}/otras` | Cruzar dos tablas por la clave foránea (`relationship` o filtro por FK) |
+| 3 | Relación | `GET /cosas/{id}/otras` | Cruzar dos tablas por la clave foránea |
 | 4 | Segundo listado con filtro | `GET /otras?campo=valor` | Query param sobre otra tabla |
-| 5 | Calculado | `GET /resumen` | Contar, sumar o agrupar (en Python o con `func` de SQLAlchemy) |
-| 6 | Alta | `POST /cosas` | Recibir el cuerpo como `dict`, **validar a mano** (400 si está mal) e insertar con la sesión |
+| 5 | Calculado | `GET /resumen` | Contar, sumar o agrupar (en Python o en la consulta) |
+| 6 | Alta | `POST /cosas` | Recibir el cuerpo (con un modelo de Pydantic o como `dict` validado a mano), rechazar los datos inválidos con **400** o **422**, e insertar en la base |
 
 Además, en Nivel A:
 - **Errores:** 401 (sin clave), 404 (no existe), y la API no se cae si la base no está o falla una consulta (`try/except`).
 - **Filtros opcionales:** si no se manda el query param, devuelve todo.
-- **Deploy:** URL pública en Render con `/docs` operativo.
+- **Seguridad (recomendado):** API key en variable de entorno (`.env`) en lugar de escrita en el código.
 - **README:** qué hace la API, lista de endpoints, cómo usar la API key, cómo correrla localmente, y declaración de uso de IA si la usaron.
 
 ## Nivel B — opcional
@@ -151,9 +161,8 @@ No se pide y **no suma**:
 ## Entregables
 
 1. Repositorio GitHub: `main.py`, script de seed, `requirements.txt`, `README.md`, commits de todos.
-2. URL pública en Render con `/docs` funcionando.
-3. Video demo (máx. 5 min): endpoints funcionando con clave, y un pedido **sin** clave mostrando el 401.
-4. Defensa oral: demo en vivo desde `/docs` y preguntas sobre el código.
+2. Video demo (máx. 5 min): endpoints funcionando con clave, y un pedido **sin** clave mostrando el 401.
+3. Defensa oral el **miércoles 28/10**: demo en vivo desde `/docs`, en local, y preguntas sobre el código. El repositorio tiene que estar al día el **miércoles 21/10**.
 
 ---
 
@@ -234,3 +243,32 @@ Todos los demás grupos ya tienen código o base de datos. Estás quedando atrá
 2. Arreglar el seed (`if __name__`) y el `to_dict` de `Game`.
 3. Pasar tablas, columnas y rutas a inglés. Conviene hacerlo ahora, antes de escribir los endpoints que faltan.
 4. Endpoints 1 (filtro), 2 y 4, que son los más simples. Después `/tabla` y el `POST`.
+
+## 15/10
+
+**📌 Cambios en las reglas** (están arriba, en *Reglas comunes*):
+- **SQLAlchemy es opcional:** también vale `sqlite3` con SQL directo.
+- **No hay que desplegar.** La defensa es **local**, en su notebook, el **miércoles 28/10**. El repo tiene que estar al día el **miércoles 21/10**.
+- **Recomendado:** la API key en una variable de entorno (`.env`) en lugar de escrita en el código. No es obligatorio, pero en la defensa se puede preguntar dónde está la clave y por qué conviene sacarla del código.
+
+**Lo que hay:** muy buen avance. 👍 Probé la API y funcionan `GET /games?team_id=` (trae los partidos de local **y** de visitante), `GET /teams/{id}` con 404, `GET /players?position=` y `GET /table`. Recalculé la tabla a mano y coincide en puntos, PJ, PG, PE, PP y en el orden. La clave anda (401 sin clave o con clave mala). El seed se corre con `python seed.py`, carga 10 + 20 + 15 y no duplica. Sacaste el venv del repo y todo está en inglés. Lo que te marqué el 08/10 del seed está resuelto.
+
+**Lo que falta para la entrega del 21/10:**
+
+1. **Validación del `POST /games`.** `validations.py` está vacío y el JSON va directo a `Game(**data)`. Probé y entran con 201:
+   - goles negativos;
+   - `true` como gol (se guarda como 1);
+   - el mismo equipo de local y de visitante;
+   - **goles en texto** (`"dos"`). Después de eso, **`GET /table` da 500** y la tabla queda rota.
+
+   Escribí `validate_game(data)` en `validations.py`: campos obligatorios, enteros y no booleanos, goles >= 0, local distinto de visitante. Que lance `ValueError` con un mensaje claro, y `main.py` lo convierte en 400. Hoy los errores que devuelve el `POST` son el texto crudo de SQLAlchemy, con SQL adentro: eso no se le muestra al usuario.
+2. **`GET /teams/999/players` devuelve `[]`.** Tiene que dar 404 si el equipo no existe.
+3. **`try/except` en `/teams/{id}` y `/teams/{id}/players`.** Los otros endpoints lo tienen; estos dos dan 500 sin control si falta la base.
+4. **README desactualizado.** Lista rutas en español que ya no existen (`/equipos`, `/partidos`, `/tabla`, `/goleadores`), no explica cómo usar la clave y los pasos para correrlo son los de Render. Tiene que tener las rutas reales, el header `X-API-Key`, los pasos con `uvicorn main:app --reload` y la declaración de uso de IA (en el seed dejaste escrito que la usaste).
+
+**Recomendación:** pasar la clave a un `.env` (ver *Seguridad*, arriba, y [guias/variables_de_entorno.md](guias/variables_de_entorno.md)). No es obligatorio, pero en la defensa se puede preguntar dónde está la clave y por qué conviene sacarla del código.
+
+**Más chico:**
+- En `crud.py:50`, el `if` que controla que los dos equipos existan solo cubre las dos primeras líneas; el resto del cálculo quedó afuera por la indentación.
+- La clase es `Game`, la tabla `matches` y la ruta `/games`. Elegí un nombre (por ejemplo, todo `matches`).
+- Quedan en español `CLAVE`, `verificar`, los mensajes de error y los `print` del seed.
