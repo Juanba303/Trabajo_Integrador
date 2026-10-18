@@ -1,12 +1,13 @@
 from sqlalchemy import select, or_
-from db import Game, Player, Team, get_session
+from db import Match, Player, Team, get_session
+import validations
 
-def list_games(team_id: int | None = None) -> list[dict]:
+def list_matches(team_id: int | None = None) -> list[dict]:
     with get_session() as s:
-        query = select(Game).order_by(Game.matchday)
+        query = select(Match).order_by(Match.matchday)
         if team_id is not None:
-            query = query.where(or_(Game.home_id == team_id, Game.away_id == team_id))
-        return [g.to_dict() for g in s.scalars(query)]
+            query = query.where(or_(Match.home_id == team_id, Match.away_id == team_id))
+        return [m.to_dict() for m in s.scalars(query)]
 
 def get_team_by_id(team_id: int) -> dict | None:
     with get_session() as s:
@@ -29,7 +30,7 @@ def list_players(position: str | None = None) -> list[dict]:
 def get_table():
     with get_session() as s:
         teams = s.scalars(select(Team)).all()
-        games = s.scalars(select(Game)).all()
+        matches = s.scalars(select(Match)).all()
 
         standings = {}
 
@@ -46,24 +47,24 @@ def get_table():
                 "goal_difference": 0
             }
 
-        for game in games:
-            if game.home_id in standings and game.away_id in standings:
-                home = standings[game.home_id]
-                away = standings[game.away_id]
+        for match in matches:
+            if match.home_id in standings and match.away_id in standings:
+                home = standings[match.home_id]
+                away = standings[match.away_id]
 
             home["played"] += 1
             away["played"] += 1            
 
-            home["goals_for"] += game.home_goals
-            home["goals_against"] += game.away_goals
-            away["goals_for"] += game.away_goals
-            away["goals_against"] += game.home_goals
+            home["goals_for"] += match.home_goals
+            home["goals_against"] += match.away_goals
+            away["goals_for"] += match.away_goals
+            away["goals_against"] += match.home_goals
 
-            if game.home_goals > game.away_goals:
+            if match.home_goals > match.away_goals:
                 home["won"] += 1
                 home["points"] += 3
                 away["lost"] += 1
-            elif game.home_goals < game.away_goals:
+            elif match.home_goals < match.away_goals:
                 away["won"] += 1
                 away["points"] += 3
                 home["lost"] += 1
@@ -82,9 +83,10 @@ def get_table():
         
         return table
 
-def create_game(data: dict) -> dict:
+def create_match(data: dict) -> dict:
     with get_session() as s:
-        game = Game(**data)            
-        s.add(game)
+        clean = validations.validate_match(data, db=s)
+        match = Match(**clean)            
+        s.add(match)
         s.commit()
-        return game.to_dict()
+        return match.to_dict()

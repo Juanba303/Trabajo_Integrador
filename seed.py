@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from db import Game, Player, Team, create_tables, get_session
+from db import Match, Player, Team, create_tables, get_session
 
 create_tables()
 
@@ -44,21 +44,21 @@ def init_db():
             ])
 
             s.add_all([
-                Game(home_id=boca.id, away_id=river.id, home_goals=2, away_goals=1, matchday=1),
-                Game(home_id=talleres.id, away_id=belgrano.id, home_goals=1, away_goals=1, matchday=1),
-                Game(home_id=estudiantes.id, away_id=barcelona.id, home_goals=0, away_goals=2, matchday=1),
-                Game(home_id=real_madrid.id, away_id=atletico_madrid.id, home_goals=2, away_goals=1, matchday=1),
-                Game(home_id=ac_milan.id, away_id=inter_milan.id, home_goals=0, away_goals=1, matchday=1),
-                Game(home_id=river.id, away_id=talleres.id, home_goals=2, away_goals=0, matchday=2),
-                Game(home_id=belgrano.id, away_id=estudiantes.id, home_goals=3, away_goals=1, matchday=2),
-                Game(home_id=barcelona.id, away_id=real_madrid.id, home_goals=3, away_goals=2, matchday=2),
-                Game(home_id=atletico_madrid.id, away_id=ac_milan.id, home_goals=1, away_goals=0, matchday=2),
-                Game(home_id=inter_milan.id, away_id=boca.id, home_goals=2, away_goals=2, matchday=2),
-                Game(home_id=boca.id, away_id=estudiantes.id, home_goals=2, away_goals=0, matchday=3),
-                Game(home_id=river.id, away_id=belgrano.id, home_goals=1, away_goals=0, matchday=3),
-                Game(home_id=talleres.id, away_id=barcelona.id, home_goals=1, away_goals=3, matchday=3),
-                Game(home_id=real_madrid.id, away_id=ac_milan.id, home_goals=2, away_goals=0, matchday=3),
-                Game(home_id=inter_milan.id, away_id=atletico_madrid.id, home_goals=1, away_goals=1, matchday=3)
+                Match(home_id=boca.id, away_id=river.id, home_goals=2, away_goals=1, matchday=1),
+                Match(home_id=talleres.id, away_id=belgrano.id, home_goals=1, away_goals=1, matchday=1),
+                Match(home_id=estudiantes.id, away_id=barcelona.id, home_goals=0, away_goals=2, matchday=1),
+                Match(home_id=real_madrid.id, away_id=atletico_madrid.id, home_goals=2, away_goals=1, matchday=1),
+                Match(home_id=ac_milan.id, away_id=inter_milan.id, home_goals=0, away_goals=1, matchday=1),
+                Match(home_id=river.id, away_id=talleres.id, home_goals=2, away_goals=0, matchday=2),
+                Match(home_id=belgrano.id, away_id=estudiantes.id, home_goals=3, away_goals=1, matchday=2),
+                Match(home_id=barcelona.id, away_id=real_madrid.id, home_goals=3, away_goals=2, matchday=2),
+                Match(home_id=atletico_madrid.id, away_id=ac_milan.id, home_goals=1, away_goals=0, matchday=2),
+                Match(home_id=inter_milan.id, away_id=boca.id, home_goals=2, away_goals=2, matchday=2),
+                Match(home_id=boca.id, away_id=estudiantes.id, home_goals=2, away_goals=0, matchday=3),
+                Match(home_id=river.id, away_id=belgrano.id, home_goals=1, away_goals=0, matchday=3),
+                Match(home_id=talleres.id, away_id=barcelona.id, home_goals=1, away_goals=3, matchday=3),
+                Match(home_id=real_madrid.id, away_id=ac_milan.id, home_goals=2, away_goals=0, matchday=3),
+                Match(home_id=inter_milan.id, away_id=atletico_madrid.id, home_goals=1, away_goals=1, matchday=3)
             ])
             s.commit()
             print("Objetos cargados")

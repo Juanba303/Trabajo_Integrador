@@ -47,9 +47,9 @@ def get_table():
     except OperationalError:
         raise HTTPException(status_code=500, detail="Error al consultar la base de datos")
 
-@app.post("/games", status_code=201)
+@app.post("/matches", status_code=201)
 def create(data: dict):
     try:
-        return crud.create_game(data)
+        return crud.create_match(data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

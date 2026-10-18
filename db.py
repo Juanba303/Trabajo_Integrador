@@ -38,7 +38,7 @@ class Player(Base):
     def to_dict(self) -> dict:
         return {"id": self.id, "name": self.name, "team_id": self.team_id, "position": self.position, "goals": self.goals}
 
-class Game(Base):
+class Match(Base):
     __tablename__ = "matches"
 
     id: Mapped[int] = mapped_column(primary_key=True)
