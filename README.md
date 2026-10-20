@@ -92,6 +92,6 @@ The free plan sleeps after 15 minutes without use, so the first request can take
 
 ## Use of AI
 
-We used AI to get solutions for data loading in seed.py and
+I used AI to get solutions for data loading in seed.py and
 organize the logic behind the table calculation and validation criteria.
 All code was written and tested by me.
