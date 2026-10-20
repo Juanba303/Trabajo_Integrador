@@ -52,27 +52,27 @@ def get_table():
                 home = standings[match.home_id]
                 away = standings[match.away_id]
 
-            home["played"] += 1
-            away["played"] += 1            
+                home["played"] += 1
+                away["played"] += 1            
 
-            home["goals_for"] += match.home_goals
-            home["goals_against"] += match.away_goals
-            away["goals_for"] += match.away_goals
-            away["goals_against"] += match.home_goals
+                home["goals_for"] += match.home_goals
+                home["goals_against"] += match.away_goals
+                away["goals_for"] += match.away_goals
+                away["goals_against"] += match.home_goals
 
-            if match.home_goals > match.away_goals:
-                home["won"] += 1
-                home["points"] += 3
-                away["lost"] += 1
-            elif match.home_goals < match.away_goals:
-                away["won"] += 1
-                away["points"] += 3
-                home["lost"] += 1
-            else:
-                home["drawn"] += 1
-                home["points"] += 1
-                away["drawn"] += 1
-                away["points"] += 1
+                if match.home_goals > match.away_goals:
+                    home["won"] += 1
+                    home["points"] += 3
+                    away["lost"] += 1
+                elif match.home_goals < match.away_goals:
+                    away["won"] += 1
+                    away["points"] += 3
+                    home["lost"] += 1
+                else:
+                    home["drawn"] += 1
+                    home["points"] += 1
+                    away["drawn"] += 1
+                    away["points"] += 1
 
         table = []
         for team_id, data in standings.items():

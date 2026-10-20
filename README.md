@@ -1,28 +1,97 @@
 # Football League API
 
-Made with FastAPI and SQLalchemy, this API will help you to organize your own football league and consult it's data, here are the endpoints:
+REST API to manage a football league, consult teams, players, matches, and standings. Built with FastAPI and SQLite for the Informática course (TDS05) at Universidad de Mendoza.
 
-### GET /equipos
-Shows a list of all the teams in the league.
+## Authors
 
-### GET /equipos/{id}/jugadores
-Shows a list of all the players of a specific team.
+- Juan Bautista Ficco Laiseca
 
-### GET /partidos
-Shows the already played matches
+## Requirements
 
-### GET /tabla	
-Shows the league's table and the performance of the teams (pts, PJ, PG, PE, PP).
+- Python 3.11 or newer
+- Git
 
-### GET /goleadores
-Shows a list of the best goalscorers.
+## How to run it
 
-### POST /partidos	
-Loads a match's result into the database.
+1. Clone the repository and enter the folder:
 
-# Running process
-    - Clone the repository with git clone <repository-url> then cd <repository-name>
-    - Activate the virtual enviroment in the terminal with source venv/bin/activate
-    - Install all the dependencies with pip install -r requirements.txt
-    - Initialize database with python seed.py
-    - Start command: python seed.py && gunicorn main:app -k uvicorn_worker.UvicornWorker -w 2 -b 0.0.0.0:$PORT
+   ```bash
+   git clone https://github.com/Juanba303/Trabajo_Integrador
+   cd Trabajo_Integrador
+   ```
+
+2. Create and activate a virtual environment:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   ```
+
+   On Windows: `venv\Scripts\activate`
+
+3. Install the dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set up your environment variables:
+
+   Create a `.env` file in the root directory:
+
+   ```env
+   API_KEY=test-key-2026
+   DB_FILE=league.db
+   ```
+
+5. Create the database and load the sample data:
+
+   ```bash
+   python seed.py
+   ```
+
+6. Start the server:
+
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+7. Open http://127.0.0.1:8000/docs
+
+## How to use it
+
+Every endpoint requires the API key in the `X-API-Key` header.
+In `/docs`, click **Authorize** and paste the key: `test-key-2026`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /games?team_id=1 | List matches, optionally filtered by team |
+| GET | /teams/{id} | Get details of a specific team |
+| GET | /teams/{id}/players | List all players of a specific team |
+| GET | /players?position=Forward | List all players, optionally filtered by position |
+| GET | /table | Get the current league table |
+| POST | /matches | Load a new match result |
+
+Example:
+
+```bash
+curl -H "X-API-Key: test-key-2026" http://127.0.0.1:8000/teams/1
+```
+
+```json
+{"id": 1, "name": "Team Name"}
+```
+
+Errors: `401` without a valid key, `404` if the team or item does not exist, `400` if the data sent is invalid, `500` if a database error occurs.
+
+## Deploy
+
+Live at https://football-league-api-2iw7.onrender.com/docs
+
+The free plan sleeps after 15 minutes without use, so the first request can take about a minute.
+
+## Use of AI
+
+We used AI to get solutions for data loading in seed.py and
+organize the logic behind the table calculation and validation criteria.
+All code was written and tested by me.

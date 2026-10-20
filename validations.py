@@ -53,12 +53,11 @@ def validate_match(data: dict, partial: bool = False, db: Session = None) -> dic
     if teams > 0:
         max_matchdays = (teams * 2) - 2
         if matchday > max_matchdays:
-            raise ValueError(
-                f"Matchday {matchday} exceeds the maximum allowed ({max_matchdays})"
-                )
+            raise ValueError(f"Matchday {matchday} exceeds the maximum allowed ({max_matchdays})")
 
     clean["matchday"] = matchday
 
+    ## From this part, I started using exists() method because it was easier to search for data in queries
     ## Check if any of the two teams already has a match scheduled on the matchday
     if "matchday" in clean and "home_id" in clean and "away_id" in clean:
         matchday_exists = db.query(exists().where(Match.matchday == clean["matchday"], or_(
@@ -66,25 +65,16 @@ def validate_match(data: dict, partial: bool = False, db: Session = None) -> dic
             Match.away_id == clean["home_id"],
             Match.home_id == clean["away_id"],
             Match.away_id == clean["away_id"],
-            ),
-            )
-        ).scalar()
+            ),)).scalar()
         if matchday_exists:
-            raise ValueError(
-                "One or both teams already have a match scheduled for this matchday"
-            )
+            raise ValueError("One or both teams already have a match scheduled for this matchday")
 
-    ## From this part, I started using exists() method because it was easier to search for data in queries
     if db is not None:
         ## Check if home team exists
         if "home_id" in clean:
-            home_exists = db.query(
-                exists().where(Team.id == clean["home_id"])
-            ).scalar()
+            home_exists = db.query(exists().where(Team.id == clean["home_id"])).scalar()
             if not home_exists:
-                raise ValueError(
-                    f"Home team with ID {clean['home_id']} doesn't exist"
-                )
+                raise ValueError(f"Home team with ID {clean['home_id']} doesn't exist")
 
         ## Check if away team exists
         if "away_id" in clean:
