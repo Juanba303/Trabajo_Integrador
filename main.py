@@ -5,10 +5,10 @@ import crud
 
 app = FastAPI(dependencies=[Depends(verify_api_key)])
 
-@app.get("/games")
-def list_games(team_id: int | None = None):
+@app.get("/matches")
+def list_matches(team_id: int | None = None):
     try:
-        return crud.list_games(team_id)
+        return crud.list_matches(team_id)
     except OperationalError:
         raise HTTPException(status_code=500, detail="Error while consulting database")
 

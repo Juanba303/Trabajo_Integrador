@@ -65,7 +65,7 @@ In `/docs`, click **Authorize** and paste the key: `test-key-2026`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | /games?team_id=1 | List matches, optionally filtered by team |
+| GET | /matches?team_id=1 | List matches, optionally filtered by team |
 | GET | /teams/{id} | Get details of a specific team |
 | GET | /teams/{id}/players | List all players of a specific team |
 | GET | /players?position=Forward | List all players, optionally filtered by position |
