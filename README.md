@@ -70,7 +70,7 @@ In `/docs`, click **Authorize** and paste the key: `test-key-2026`.
 | GET | /teams/{id}/players | List all players of a specific team |
 | GET | /players?position=Forward | List all players, optionally filtered by position |
 | GET | /table | Get the current league table |
-| POST | /matches | Load a new match result |
+| POST | /load_matches | Load a new match result |
 
 Example:
 

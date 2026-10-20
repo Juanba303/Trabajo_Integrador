@@ -44,7 +44,7 @@ def get_table():
     except OperationalError:
         raise HTTPException(status_code=500, detail="Error while consulting database")
 
-@app.post("/matches", status_code=201)
+@app.post("/load_matches", status_code=201)
 def create(data: dict):
     try:
         return crud.create_match(data)
