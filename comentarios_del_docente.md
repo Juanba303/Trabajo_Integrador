@@ -272,3 +272,52 @@ Todos los demás grupos ya tienen código o base de datos. Estás quedando atrá
 - En `crud.py:50`, el `if` que controla que los dos equipos existan solo cubre las dos primeras líneas; el resto del cálculo quedó afuera por la indentación.
 - La clase es `Game`, la tabla `matches` y la ruta `/games`. Elegí un nombre (por ejemplo, todo `matches`).
 - Quedan en español `CLAVE`, `verificar`, los mensajes de error y los `print` del seed.
+
+## 21/10
+
+**Lo que hay: el Nivel A está completo y funcionando.** 🎉 Probé la API entera en una copia limpia:
+
+| # | Endpoint | Resultado |
+|---|---|---|
+| 1 | `GET /matches?team_id=` | ✅ Con `team_id=1` trae los partidos de local y de visitante |
+| 2 | `GET /teams/{id}` | ✅ `/teams/999` da 404 |
+| 3 | `GET /teams/{id}/players` | ✅ Equipo inexistente da 404 (lo que faltaba el 15/10) |
+| 4 | `GET /players?position=` | ✅ `?position=Delantero` filtra bien |
+| 5 | `GET /table` | ✅ Coincide con el cálculo a mano (Barcelona 9 pts, Boca 7...) y ordena por puntos, diferencia de gol y goles a favor |
+| 6 | `POST /load_matches` | ✅ 201 con un partido válido |
+
+**La validación del `POST` quedó muy completa.** Da 400, con un mensaje claro, para:
+- un equipo contra sí mismo;
+- goles en texto, negativos o `true`;
+- un equipo que no existe;
+- una fecha mayor que la máxima del torneo;
+- un equipo que ya juega en esa fecha;
+- un partido repetido;
+- un cuerpo vacío.
+
+Y lo más importante: después de cualquiera de esos intentos, `/table` sigue andando.
+
+Además:
+- Sin clave o con clave mala da **401**.
+- La clave se lee del `.env`, y si no está cargada no deja pasar nada.
+- Si falta la base, los cinco GET responden "Error while consulting database" en vez de caerse.
+- El README está completo, en inglés y con la declaración de uso de IA.
+- **El deploy en Render funciona**: `/docs` abre, sin clave da 401 y con la clave devuelve la tabla. No era obligatorio, así que suma.
+
+Muy buen trabajo, sobre todo trabajando solo.
+
+**Recomendaciones** (nada de esto es obligatorio para la entrega):
+- **`/teams/{id}` decide si el equipo existe mirando si tiene jugadores.** Un equipo sin jugadores daría 404 aunque exista. Usá `crud.get_team_by_id(id) is None`, que es lo que corresponde. En `/teams/{id}/players`, un equipo existente sin jugadores tendría que devolver `[]`.
+- **El `POST` atrapa `Exception` y devuelve todo como 400.** Un error de la base también llegaría como "datos inválidos". Mejor: `ValueError` → 400 y `OperationalError` → 500, como en los GET.
+- **La ruta del alta.** `POST /load_matches` funciona, pero lo habitual es `POST /matches`: la misma ruta que el listado, cambiando el método.
+- **README:**
+  - El ejemplo `?position=Forward` devuelve `[]`, porque las posiciones están en español: usá `?position=Delantero`.
+  - El ejemplo de respuesta de `/teams/1` no muestra `city`.
+  - La línea `DB_FILE=league.db` del `.env` no la lee nadie: `db.py` tiene el nombre fijo.
+- **Subí un `.env.example`** con `API_KEY=` vacío, así quien clona el repo sabe qué variable crear.
+- **`requirements.txt`** tiene todo lo que tenés instalado (Jupyter incluido). Funciona; si querés, dejalo solo con lo que usa el proyecto.
+- En `validations.py`, el parámetro `partial` no se usa.
+
+**Para la defensa (28/10):**
+- Probá la demo completa en la notebook con la que vas a presentar: crear el `.env`, `python seed.py`, `uvicorn main:app --reload` y los 6 endpoints desde `/docs`, incluido un pedido sin clave.
+- Preparate para explicar cómo se calcula la tabla y el orden de las validaciones del `POST`. Son las partes más interesantes del proyecto.
